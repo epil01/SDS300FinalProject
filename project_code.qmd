@@ -1,0 +1,66 @@
+---
+title: "Data Cleaning"
+format: html
+editor: visual
+---
+
+## Loading Libraries
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+library(e1071)
+library(caTools)
+ 
+```
+
+## Cleaning Data
+
+```{r}
+
+raw_data <- read.csv("Autism_Screening_Data.csv")
+df <- raw_data[c(2:13,15,16,19,22)]
+df$Class.ASD <- as.factor(df$Class.ASD)
+df$jundice <- as.factor(df$jundice)
+df$autism_parent <- as.factor(df$austim)
+
+df <- df|> 
+  mutate_if(is.integer, as.factor)
+
+df$result <- as.numeric(df$result)
+df$age <- as.numeric(df$age)
+
+df <- subset(df, select = -c(14))
+```
+
+Explore Code
+
+```{r}
+sapply(df, class)
+summary(df)
+
+#What is % of ASD in datset 
+percentage <- prop.table(table(df$Class.ASD)) * 100
+cbind(freq=table(df$Class.ASD), percentage=percentage)
+
+```
+
+## SVM
+
+```{r}
+
+```
+
+## Random Forrest
+
+```{r}
+
+```
+
+## Logistic Regression
+
+```{r}
+
+```
