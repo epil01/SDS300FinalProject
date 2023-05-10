@@ -9,10 +9,8 @@ editor: visual
 ```{r}
 library(tidyverse)
 library(ggplot2)
-library(dplyr)
+library(caret)
 
-library(e1071)
-library(caTools)
  
 ```
 
@@ -22,45 +20,76 @@ library(caTools)
 
 raw_data <- read.csv("Autism_Screening_Data.csv")
 df <- raw_data[c(2:13,15,16,19,22)]
-df$Class.ASD <- as.factor(df$Class.ASD)
-df$jundice <- as.factor(df$jundice)
-df$autism_parent <- as.factor(df$austim)
+df_num <- raw_data[c(2:12)]
 
-df <- df|> 
-  mutate_if(is.integer, as.factor)
+sapply(df_num, class)
+df_num <- df_num|> 
+  mutate_if(is.integer, as.numeric)
+df_num$age <- as.numeric(df_num$age)
 
-df$result <- as.numeric(df$result)
-df$age <- as.numeric(df$age)
 
-df <- subset(df, select = -c(14))
-```
 
-Explore Code
+df_num$outcome[df$Class.ASD == "NO"] <- 0
+df_num$outcome[df$Class.ASD == "YES"] <- 1
 
-```{r}
-sapply(df, class)
-summary(df)
+df_num$sex[df$gender == "f"] <- 0
+df_num$sex[df$gender == "m"] <- 1
 
-#What is % of ASD in datset 
-percentage <- prop.table(table(df$Class.ASD)) * 100
-cbind(freq=table(df$Class.ASD), percentage=percentage)
+df_num$jundice[df$jundice == "no"] <- 0
+df_num$jundice[df$jundice == "yes"] <- 1
 
+df_num$asd.parent[df$austim == "no"] <- 0
+df_num$asd.parent[df$austim == "yes"] <- 1
+
+sapply(df_num, class)
 ```
 
 ## SVM
 
-```{r}
-
-```
-
-## Random Forrest
+Tutorial Code Begins
 
 ```{r}
+df_num <- df_num |>
+  drop_na()
 
-```
+set.seed(1234)
+intrain <- createDataPartition(y = df_num$outcome, p=0.7, list = FALSE)
+training <- df_num[intrain,]
+testing <- df_num[-intrain,]
 
-## Logistic Regression
+dim(training)
+dim(testing)
 
-```{r}
+anyNA(df_num)
+
+summary(df_num)
+
+training[["outcome"]] = factor(training[["outcome"]])
+
+trcrtl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+
+svm_Linear <- train(outcome ~., data = training, method = "svmLinear", 
+                    trControl=trcrtl, preProcess= c("center", "scale"),
+                    tuneLength = 10)
+
+svm_Linear
+
+test_pred <- predict(svm_Linear, newdata = testing)
+test_pred
+
+confusionMatrix(table(test_pred, testing$outcome))
+
+grid <- expand.grid(C = c(0, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5))
+
+svm_Linear_Grid <- train(outcome ~., data = training, method = "svmLinear",
+                    trControl=trcrtl, preProcess= c("center", "scale"), 
+                    tuneGrid = grid, tuneLength = 10)
+svm_Linear_Grid
+plot(svm_Linear_Grid)
+
+test_pred_grid <- predict(svm_Linear_Grid, newdata = testing)
+test_pred_grid
+
+confusionMatrix(table(test_pred_grid, testing$outcome))
 
 ```
