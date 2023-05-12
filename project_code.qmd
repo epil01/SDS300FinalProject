@@ -128,8 +128,25 @@ confusionMatrix(table(forest_pred1,testing_rf$outcome))
 ## Logistic Regression
 
 ```{r}
-instal
+ 
+library(caTools)
+df_num <- df_num |>
+  drop_na()
 
+set.seed(200)
+intrain <- createDataPartition(y = df_num$outcome, p=0.7, list = FALSE)
+training_lr <- df_num[intrain,]
+testing_lr <- df_num[-intrain,]
 
+training_lr$outcome <- as.factor(training_lr$outcome)
 
+model_lr <- glm(outcome~., training_lr, family = "binomial")
+summary(model_lr)
+
+res <- predict(model_lr, testing_lr, type = "response")
+res
+(table(ActualValue=testing_lr$outcome, PredictedValue=res>0.5))
+
+43/86  
+#the target label has no linear correlation with the features
 ```
