@@ -8,16 +8,14 @@ editor: visual
 
 ```{r}
 library(tidyverse)
-library(ggplot2)
 library(caret)
-
- 
 ```
 
 ## Cleaning Data
 
 ```{r}
 
+#all my code
 raw_data <- read.csv("Autism_Screening_Data.csv")
 df <- raw_data[c(2:13,15,16,19,22)]
 df_num <- raw_data[c(2:12)]
@@ -26,8 +24,6 @@ sapply(df_num, class)
 df_num <- df_num|> 
   mutate_if(is.integer, as.numeric)
 df_num$age <- as.numeric(df_num$age)
-
-
 
 df_num$outcome[df$Class.ASD == "NO"] <- 0
 df_num$outcome[df$Class.ASD == "YES"] <- 1
@@ -94,7 +90,7 @@ confusionMatrix(table(test_pred_grid, testing$outcome))
 
 ```
 
-## Random Forrest 
+## Random Forrest
 
 ```{r}
 
@@ -147,6 +143,5 @@ res <- predict(model_lr, testing_lr, type = "response")
 res
 (table(ActualValue=testing_lr$outcome, PredictedValue=res>0.5))
 
-43/86  
-#the target label has no linear correlation with the features
+(43/86)*100 
 ```
