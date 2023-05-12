@@ -44,9 +44,9 @@ df_num$asd.parent[df$austim == "yes"] <- 1
 sapply(df_num, class)
 ```
 
-## SVM
-
 Tutorial Code Begins
+
+## SVM
 
 ```{r}
 df_num <- df_num |>
@@ -91,5 +91,45 @@ test_pred_grid <- predict(svm_Linear_Grid, newdata = testing)
 test_pred_grid
 
 confusionMatrix(table(test_pred_grid, testing$outcome))
+
+```
+
+## Random Forrest 
+
+```{r}
+
+library(randomForest)
+df_num <- df_num |>
+  drop_na()
+
+
+set.seed(100)
+intrain <- createDataPartition(y = df_num$outcome, p=0.7, list = FALSE)
+training_rf <- df_num[intrain,]
+testing_rf <- df_num[-intrain,]
+
+training_rf$outcome <- as.factor(training_rf$outcome)
+
+bestmtry <- tuneRF(training_rf, training_rf$outcome, stepFactor = 1.2, improve = 0.01, trace = T, plot = T )
+
+asd_forest <- randomForest(outcome~., data = training)
+asd_forest
+
+importance(asd_forest)
+varImpPlot(asd_forest)
+
+forest_pred1 <- predict(asd_forest, newdata = testing_rf, type = "class")
+forest_pred1
+
+confusionMatrix(table(forest_pred1,testing_rf$outcome))
+    
+```
+
+## Logistic Regression
+
+```{r}
+instal
+
+
 
 ```
